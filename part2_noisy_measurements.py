@@ -30,27 +30,7 @@ from robot import robot  # Check the robot.py tab to see how this works.
 from math import *
 from matrix import matrix # Check the matrix.py tab to see how this works.
 
-# This is the function you have to write. Note that measurement is a
-# single (x, y) point. This function will have to be called multiple
-# times before you have enough information to accurately predict the
-# next position. The OTHER variable that your function returns will be
-# passed back to your function the next time it is called. You can use
-# this to keep track of important information over time.
 from CircularMotionKalmanFilter import CircularMotionKalmanFilter
-
-UNCERTAINTY_COVARIANCE = 1000.0
-
-def initializeKalmanFilter():
-    kf = CircularMotionKalmanFilter()
-    # P would be diagonal with the large constant uncertainty covariance
-    kf.P = matrix([
-        [UNCERTAINTY_COVARIANCE, 0, 0, 0, 0],
-        [0, UNCERTAINTY_COVARIANCE, 0, 0, 0],
-        [0, 0, UNCERTAINTY_COVARIANCE, 0, 0],
-        [0, 0, 0, UNCERTAINTY_COVARIANCE, 0],
-        [0, 0, 0, 0, UNCERTAINTY_COVARIANCE]
-    ])
-    return kf
 
 def estimate_next_pos(measurement, OTHER=None):
     """Estimate the next (x, y) position of the wandering Traxbot
@@ -66,7 +46,7 @@ def estimate_next_pos(measurement, OTHER=None):
 
     # create an instance of the EKF
     if not OTHER:
-        OTHER = initializeKalmanFilter()
+        OTHER = CircularMotionKalmanFilter()
 
     # set up the measurement, updates the EKF and predict the next step
     z = matrix([
@@ -92,63 +72,6 @@ def demo_grading(estimate_next_pos_fcn, target_bot, OTHER=None):
     your code. Note that the OTHER variable allows you to store any
     information that you want.
     """
-    """
-    localized = False
-    distance_tolerance = 0.01 * target_bot.distance
-    ctr = 0
-    # if you haven't localized the target bot, make a guess about the next
-    # position, then we move the bot and compare your guess to the true
-    # next position. When you are close enough, we stop checking.
-    #For Visualization
-    import turtle    #You need to run this locally to use the turtle module
-    window = turtle.Screen()
-    window.bgcolor('white')
-    size_multiplier = 25.0  #change Size of animation
-    broken_robot = turtle.Turtle()
-    broken_robot.shape('turtle')
-    broken_robot.color('green')
-    broken_robot.resizemode('user')
-    broken_robot.shapesize(0.1, 0.1, 0.1)
-    measured_broken_robot = turtle.Turtle()
-    measured_broken_robot.shape('circle')
-    measured_broken_robot.color('red')
-    measured_broken_robot.resizemode('user')
-    measured_broken_robot.shapesize(0.1, 0.1, 0.1)
-    prediction = turtle.Turtle()
-    prediction.shape('arrow')
-    prediction.color('blue')
-    prediction.resizemode('user')
-    prediction.shapesize(0.1, 0.1, 0.1)
-    prediction.penup()
-    broken_robot.penup()
-    measured_broken_robot.penup()
-    #End of Visualization
-    while not localized and ctr <= 1000:
-        ctr += 1
-        measurement = target_bot.sense()
-        position_guess, OTHER = estimate_next_pos_fcn(measurement, OTHER)
-        target_bot.move_in_circle()
-        true_position = (target_bot.x, target_bot.y)
-        error = distance_between(position_guess, true_position)
-        if error <= distance_tolerance:
-            print "You got it right! It took you ", ctr, " steps to localize."
-            localized = True
-        if ctr == 1000:
-            print "Sorry, it took you too many steps to localize the target."
-        #More Visualization
-        measured_broken_robot.setheading(target_bot.heading*180/pi)
-        measured_broken_robot.goto(measurement[0]*size_multiplier, measurement[1]*size_multiplier-200)
-        measured_broken_robot.stamp()
-        broken_robot.setheading(target_bot.heading*180/pi)
-        broken_robot.goto(target_bot.x*size_multiplier, target_bot.y*size_multiplier-200)
-        broken_robot.stamp()
-        prediction.setheading(target_bot.heading*180/pi)
-        prediction.goto(position_guess[0]*size_multiplier, position_guess[1]*size_multiplier-200)
-        prediction.stamp()
-        #End of Visualization
-    return localized
-    """
-
     localized = False
     distance_tolerance = 0.01 * target_bot.distance
     ctr = 0
@@ -181,13 +104,13 @@ def naive_next_pos(measurement, OTHER=None):
     return xy_estimate, OTHER
 
 # run multiple trials of the program to get a good sense of its capability
-NUM_TRIALS = 100
+NUM_TRIALS = 5
 localized = 0
 counter = []
 for i in range(NUM_TRIALS):
     # create a test target
     test_target = robot(2.1, 4.3, 0.5, 2*pi / 34.0, 1.5)
-    measurement_noise = 0.2 * test_target.distance
+    measurement_noise = 0.05 * test_target.distance
     test_target.set_noise(0.0, 0.0, measurement_noise)
     # run the estimation function to decided if the target is found
     found, ctr = demo_grading(estimate_next_pos, test_target)
@@ -195,8 +118,12 @@ for i in range(NUM_TRIALS):
     if found:
         localized += 1
         counter.append(ctr)
-# print out the final results with success rate and the average iteration number
-successPercent = 100.0 * localized / NUM_TRIALS
-avgCounter = sum(counter) / len(counter)
-print 'Localized {:.2f}% of the trials'.format(successPercent)
-print 'Averaged {:.1f} iterations.'.format(avgCounter)
+
+if localized > 0:
+    # print out the final results with success rate and the average iteration number
+    successPercent = 100.0 * localized / NUM_TRIALS
+    avgCounter = float(sum(counter)) / len(counter)
+    print 'Localized {:.2f}% of the {:d} trials'.format(successPercent, NUM_TRIALS)
+    print 'Averaged {:.1f} iterations'.format(avgCounter)
+else:
+    print 'All {:d} attempt(s) failed!!'.format(NUM_TRIALS)

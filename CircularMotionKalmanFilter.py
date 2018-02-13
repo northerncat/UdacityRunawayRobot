@@ -29,7 +29,7 @@ class CircularMotionKalmanFilter(object):
     The estimation update step is the same as the original Kalman Filter since
     the observation model H remains linear.
     """
-    def __init__(self):
+    def __init__(self, cov = 1000.0, measurementNoise = 1.0):
         """ Constructor
         Initializes an Extended Kalman Filter with n=5 variable dimension and
         m=2 measurement dimension, then set up the H and R matrices.
@@ -38,8 +38,13 @@ class CircularMotionKalmanFilter(object):
         self.m = 2
         self.x = matrix([[]])
         self.x.zero(self.n, 1)
-        self.P = matrix([[]])
-        self.P.zero(self.n, self.n)
+        self.P = matrix([
+            [cov, 0, 0, 0, 0],
+            [0, cov, 0, 0, 0],
+            [0, 0, cov, 0, 0],
+            [0, 0, 0, cov, 0],
+            [0, 0, 0, 0, cov]
+        ])
         self.F = matrix([[]])
         self.F.zero(self.n, self.n)
         self.u = matrix([[]])
@@ -49,8 +54,8 @@ class CircularMotionKalmanFilter(object):
             [0, 1, 0, 0, 0]
         ])
         self.R = matrix([
-            [1.0, 0],
-            [0, 1.0]
+            [measurementNoise, 0],
+            [0, measurementNoise]
         ])
         self.I = matrix([[]])
         self.I.identity(self.n)
@@ -126,6 +131,19 @@ class CircularMotionKalmanFilter(object):
             [0, 0, 0, 1, 0],
             [0, 0, 0, 0, 1]
         ])
+
+    def predictAfterN(self, n):
+        """
+        Predicts the state of the variables based on the current estimations
+        after n time steps, and return the x and y positions.
+
+        Returns:
+            x and y positions estimated to be after n time steps
+        """
+        x = self.performTransitionModel()
+        for i in range(n-1):
+            x = self.performTransitionModel()
+        return x.value[0][0], x.value[1][0]
 
     def getX(self):
         """ Get the current estimation of the x position. """

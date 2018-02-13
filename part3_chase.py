@@ -40,30 +40,10 @@ import random
 
 from CircularMotionKalmanFilter import CircularMotionKalmanFilter
 
-UNCERTAINTY_COVARIANCE = 1000.0
-
-def initializeKalmanFilter():
-    kf = CircularMotionKalmanFilter()
-    # P would be diagonal with the large constant uncertainty covariance
-    kf.P = matrix([
-        [UNCERTAINTY_COVARIANCE, 0, 0, 0, 0],
-        [0, UNCERTAINTY_COVARIANCE, 0, 0, 0],
-        [0, 0, UNCERTAINTY_COVARIANCE, 0, 0],
-        [0, 0, 0, UNCERTAINTY_COVARIANCE, 0],
-        [0, 0, 0, 0, UNCERTAINTY_COVARIANCE]
-    ])
-    return kf
-
 def next_move(hunter_position, hunter_heading, target_measurement, max_distance, OTHER = None):
-    # This function will be called after each time the target moves. 
-
-    # The OTHER variable is a place for you to store any historical information about
-    # the progress of the hunt (or maybe some localization information). Your return format
-    # must be as follows in order to be graded properly.
-
     # create an instance of the EKF
     if not OTHER:
-        OTHER = initializeKalmanFilter()
+        OTHER = CircularMotionKalmanFilter()
 
     # set up the measurement, updates the EKF and predict the next step
     z = matrix([
@@ -75,8 +55,9 @@ def next_move(hunter_position, hunter_heading, target_measurement, max_distance,
 
     heading_to_target = get_heading(hunter_position, predict_target_position)
     heading_difference = heading_to_target - hunter_heading
-    turning =  heading_difference # turn towards the target
-    distance = min(max_distance, distance_between(hunter_position, predict_target_position)) # full speed ahead!
+    turning =  heading_difference
+    # move as much as the max_distance or the distance to the target
+    distance = min(max_distance, distance_between(hunter_position, predict_target_position))
     return turning, distance, OTHER
 
 def distance_between(point1, point2):
@@ -179,8 +160,12 @@ for i in range(NUM_TRIALS):
     if found:
         chased += 1
         counter.append(ctr)
-# print out the final results with success rate and the average iteration number
-successPercent = 100.0 * chased / NUM_TRIALS
-avgCounter = sum(counter) / len(counter)
-print 'Captured {:.2f}% of the trials'.format(successPercent)
-print 'Averaged {:.1f} iterations.'.format(avgCounter)
+
+if chased > 0:
+    # print out the final results with success rate and the average iteration number
+    successPercent = 100.0 * chased / NUM_TRIALS
+    avgCounter = float(sum(counter)) / len(counter)
+    print 'Captured {:.2f}% of the {:d} trials'.format(successPercent, NUM_TRIALS)
+    print 'Averaged {:.1f} iterations'.format(avgCounter)
+else:
+    print 'All {:d} attempt(s) failed!!'.format(NUM_TRIALS)
