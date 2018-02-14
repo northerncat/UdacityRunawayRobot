@@ -29,7 +29,7 @@ class CircularMotionKalmanFilter(object):
     The estimation update step is the same as the original Kalman Filter since
     the observation model H remains linear.
     """
-    def __init__(self, cov = 1000.0, measurementNoise = 1.0):
+    def __init__(self, cov=1000.0, measurementNoise=1.0):
         """ Constructor
         Initializes an Extended Kalman Filter with n=5 variable dimension and
         m=2 measurement dimension, then set up the H and R matrices.
@@ -141,7 +141,7 @@ class CircularMotionKalmanFilter(object):
             x and y positions estimated to be after n time steps
         """
         x = self.performTransitionModel()
-        for i in range(n-1):
+        for _ in range(n-1):
             x = self.performTransitionModel()
         return x.value[0][0], x.value[1][0]
 

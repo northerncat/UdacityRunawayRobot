@@ -26,9 +26,9 @@
 
 # These import steps give you access to libraries which you may (or may
 # not) want to use.
-from robot import robot  # Check the robot.py tab to see how this works.
-from math import *
+from math import pi, sqrt
 from matrix import matrix # Check the matrix.py tab to see how this works.
+from robot import robot  # Check the robot.py tab to see how this works.
 
 from CircularMotionKalmanFilter import CircularMotionKalmanFilter
 
@@ -105,7 +105,7 @@ def naive_next_pos(measurement, OTHER=None):
 
 # run multiple trials of the program to get a good sense of its capability
 NUM_TRIALS = 5
-localized = 0
+nLocalized = 0
 counter = []
 for i in range(NUM_TRIALS):
     # create a test target
@@ -113,15 +113,15 @@ for i in range(NUM_TRIALS):
     measurement_noise = 0.05 * test_target.distance
     test_target.set_noise(0.0, 0.0, measurement_noise)
     # run the estimation function to decided if the target is found
-    found, ctr = demo_grading(estimate_next_pos, test_target)
+    found, it = demo_grading(estimate_next_pos, test_target)
     # record the successes!
     if found:
-        localized += 1
-        counter.append(ctr)
+        nLocalized += 1
+        counter.append(it)
 
-if localized > 0:
+if nLocalized > 0:
     # print out the final results with success rate and the average iteration number
-    successPercent = 100.0 * localized / NUM_TRIALS
+    successPercent = 100.0 * nLocalized / NUM_TRIALS
     avgCounter = float(sum(counter)) / len(counter)
     print 'Localized {:.2f}% of the {:d} trials'.format(successPercent, NUM_TRIALS)
     print 'Averaged {:.1f} iterations'.format(avgCounter)
