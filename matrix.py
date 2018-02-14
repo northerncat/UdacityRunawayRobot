@@ -1,12 +1,11 @@
-from math import *
-import random
+from math import sqrt
 
-class matrix:
-    
+class matrix(object):
+    """ matrix class provided by Udacity. """
     def __init__(self, value):
         self.value = value
-        self.dimx  = len(value)
-        self.dimy  = len(value[0])
+        self.dimx = len(value)
+        self.dimy = len(value[0])
         if value == [[]]:
             self.dimx = 0
 
@@ -15,18 +14,18 @@ class matrix:
         if dimx < 1 or dimy < 1:
             raise ValueError, "Invalid size of matrix"
         else:
-            self.dimx  = dimx
-            self.dimy  = dimy
-            self.value = [[0 for row in range(dimy)] for col in range(dimx)]
+            self.dimx = dimx
+            self.dimy = dimy
+            self.value = [[0 for _ in range(dimy)] for __ in range(dimx)]
 
     def identity(self, dim):
         # check if valid dimension
         if dim < 1:
             raise ValueError, "Invalid size of matrix"
         else:
-            self.dimx  = dim
-            self.dimy  = dim
-            self.value = [[0 for row in range(dim)] for col in range(dim)]
+            self.dimx = dim
+            self.dimy = dim
+            self.value = [[0 for _ in range(dim)] for __ in range(dim)]
             for i in range(dim):
                 self.value[i][i] = 1
 
@@ -86,8 +85,8 @@ class matrix:
         return res
 
 
-    def Cholesky(self, ztol= 1.0e-5):
-        # Computes the upper triangular Cholesky factorization of  
+    def Cholesky(self, ztol=1.0e-5):
+        # Computes the upper triangular Cholesky factorization of
         # a positive definite matrix.
         # This code is based on http://adorio-research.org/wordpress/?p=4560
         res = matrix([[]])
@@ -98,7 +97,7 @@ class matrix:
             d = self.value[i][i] - S
             if abs(d) < ztol:
                 res.value[i][i] = 0.0
-            else: 
+            else:
                 if d < 0.0:
                     raise ValueError, "Matrix not positive-definite"
                 res.value[i][i] = sqrt(d)
@@ -107,28 +106,29 @@ class matrix:
                 if abs(S) < ztol:
                     S = 0.0
                 try:
-                   res.value[i][j] = (self.value[i][j] - S)/res.value[i][i]
+                    res.value[i][j] = (self.value[i][j] - S)/res.value[i][i]
                 except:
-                   raise ValueError, "Zero diagonal"
-        return res 
- 
+                    raise ValueError, "Zero diagonal"
+        return res
+
     def CholeskyInverse(self):
-	# Computes inverse of matrix given its Cholesky upper Triangular
-	# decomposition of matrix.
+        # Computes inverse of matrix given its Cholesky upper Triangular
+        # decomposition of matrix.
         # This code is based on http://adorio-research.org/wordpress/?p=4560
 
         res = matrix([[]])
         res.zero(self.dimx, self.dimx)
 
-	# Backward step for inverse.
+        # Backward step for inverse.
         for j in reversed(range(self.dimx)):
             tjj = self.value[j][j]
             S = sum([self.value[j][k]*res.value[j][k] for k in range(j+1, self.dimx)])
             res.value[j][j] = 1.0/ tjj**2 - S/ tjj
-	    for i in reversed(range(j)):
-                res.value[j][i] = res.value[i][j] = -sum([self.value[i][k]*res.value[k][j] for k in range(i+1,self.dimx)])/self.value[i][i]
+            for i in reversed(range(j)):
+                total = sum([self.value[i][k]*res.value[k][j] for k in range(i+1, self.dimx)])
+                res.value[j][i] = res.value[i][j] = - total / self.value[i][i]
         return res
-	
+
 
     def inverse(self):
         aux = self.Cholesky()
