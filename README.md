@@ -22,3 +22,12 @@ turning angle, after three measurements.
 In this part, we assume that the robot's measurements of its positions have a zero-mean Gaussian noise, while its movements are
 still exact. I decide to use a Kalman filter to estimate the heading direction, the turning angle and distance traveled between
 each measurements.
+
+## Part 3: Chasing
+In this part, we administer a robot to start from a location some distance away from the robot that ran away. This
+pickup robot is faster than the ran away robot, so it can chase the ran away robot easily.
+
+## Part 4: Chasing with a Plan
+In this part, our pickup robot is the same speed as the ran away robot. As a result, the robot would need some pre-planning
+and even better localization method to reach the ran away robot. It will use the Extended Kalman Filtering algorithm to reduce
+the noise from the ran away robot's measurements, and accurately localize the robot for a fast chase.
